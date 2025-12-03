@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Image Upload</title>
+</head>
+<body>
+  <h2>Upload an Image</h2>
+  <input type="file" id="file" accept="image/*">
+  <button id="upload">Upload</button>
+  <pre id="status"></pre>
+
+  <script>
+  async function uploadFile(file) {
+    try {
+      // Step 1: Request pre-signed URL from Lambda via API Gateway
+      const apiUrl = "https://qufosox4yc.execute-api.us-east-2.amazonaws.com/getPresignedUrl?filename=" + file.name;
+      const presignResponse = await fetch(apiUrl);
+      const data = await presignResponse.json();
+      const url = data.url; // this is the pre-signed URL returned by Lambda
+
+      // Step 2: Upload file to S3 using the pre-signed URL
+      const uploadResponse = await fetch(url, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type
+        }
+      });
+
+      // Step 3: Show status
+      if (uploadResponse.ok) {
+        document.getElementById("status").innerText = "Upload successful! Lambda should process it shortly.";
+      } else {
+        document.getElementById("status").innerText = "Upload failed with status: " + uploadResponse.status;
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById("status").innerText = "Error during upload!";
+    }
+  }
+
+  document.getElementById("upload").onclick = () => {
+    const file = document.getElementById("file").files[0];
+    if (!file) return alert("Select a file first!");
+    uploadFile(file);
+  };
+</script>
+
+</body>
+</html>
