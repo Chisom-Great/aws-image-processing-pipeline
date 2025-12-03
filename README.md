@@ -1,57 +1,53 @@
-![](https://via.placeholder.com/1000x250/000000/ffffff?text=AWS+Image+Recognition+Pipeline+%7C+Serverless+Rekognition+Project)
+# Image Recognition Pipeline with AWS
 
-# 🖼️ AWS Image Recognition Pipeline
+![AWS Logo](https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg)
 
-A fully serverless image-processing workflow built using **AWS S3, Lambda, Rekognition, and API Gateway**.  
-Users upload an image via a simple frontend, AWS processes it automatically, and the system returns a JSON output of detected objects.
+## Project Overview
+This project demonstrates a fully serverless image recognition workflow using AWS services. Users can upload images through a simple web interface, and the images are automatically processed using AWS Lambda and Amazon Rekognition. The results are saved in JSON format in an S3 bucket.
+
+**Key Skills Demonstrated:**
+- AWS S3 bucket management & permissions
+- Serverless computing with AWS Lambda
+- API Gateway for presigned URL uploads
+- Amazon Rekognition for image analysis
+- Frontend integration (HTML + JavaScript)
+- CORS configuration & secure file upload
 
 ---
 
-## 🚀 Features
-- Automated image processing using **AWS Lambda**
-- Image recognition powered by **Amazon Rekognition**
-- Frontend upload via **presigned URL**
-- Secure, scalable & fully serverless architecture
-- Result stored as JSON inside S3 output bucket
+## Architecture
 
----
-
-## 🧩 System Architecture
-
-[ User Browser ]
+[User Browser]
 |
-v
-upload.html → API Gateway → S3 (Input Bucket)
+[upload.html] --(select file)--> [API Gateway] --(presigned URL)--> [S3 Input Bucket]
 |
-v
 Trigger Lambda (great-image-processor)
 |
-v
-Amazon Rekognition → S3 (Output Bucket with JSON result)
----
-
-## 🔧 Implementation Steps
-
-### 1️⃣ Create S3 Buckets
-| Bucket | Purpose |
-|-------|----------|
-| `great-input-bucket` | Stores uploaded images |
-| `great-output-bucket` | Stores JSON recognition results |
+[Amazon Rekognition] --> [S3 Output Bucket]
+![Architecture Diagram](screenshots/architecture-diagram.png)
 
 ---
 
-### 2️⃣ Configure Input Bucket (CORS + Policy)
+## Implementation Steps
 
-#### **CORS**
+### 1. Create S3 Buckets
+- **Input Bucket:** `great-input-bucket` – stores uploaded images  
+- **Output Bucket:** `great-output-bucket` – stores JSON results  
+
+### 2. Configure S3
+
+**CORS configuration** for input bucket:
+
 ```json
 [
   {
     "AllowedHeaders": ["*"],
     "AllowedMethods": ["GET", "PUT", "HEAD"],
-    "AllowedOrigins": ["*"]
+    "AllowedOrigins": ["*"],
+    "ExposeHeaders": []
   }
 ]
-Bucket Policy{
+Bucket policy for presigned URL uploads:{
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -63,36 +59,36 @@ Bucket Policy{
     }
   ]
 }
-How to Test
+Lambda Functionslambda-get-presigned-url.py – Generates presigned URLs for secure uploads.
 
-Open upload.html
+lambda-image-processor.py – Triggered by S3 uploads, uses Amazon Rekognition to detect labels, and saves results as JSON in the output bucket.
+Frontend Integration
 
-Select an image → click Upload
+frontend/upload.html – Simple HTML + JS page to upload images.Testing Steps:
 
-Check great-input-bucket for image
+Open upload.html in the browser.
 
-Check great-output-bucket for result JSON
+Select an image and click Upload.
 
-(Optional) View logs inside CloudWatch{
-  "Labels": [
-    {"Name": "Person", "Confidence": 99.0},
-    {"Name": "Car", "Confidence": 87.5}
-  ]
-}
-Cost Notes
-Service	Charge
-S3	Storage usage
-Lambda	Execution time
-Rekognition	Per image processed
+Verify the image appears in great-input-bucket.
 
-Delete test images to reduce cost.Future Improvements
+Wait a few seconds and check great-output-bucket for JSON results:Cost Considerations
 
-Store results in DynamoDB
+S3: Charged per GB stored.
 
-Build UI to display label results visually
+Lambda: Charged per execution duration and memory.
 
-Rekognition Custom Labels (custom training)
+Amazon Rekognition: Charged per image processed.
 
-Add authentication user access control
+Tip: Delete test images after completion to reduce costs.Possible Improvements
 
-aws-image-processing-pipeline
+Store results in DynamoDB for easy querying.
+
+Create a frontend viewer to display labels visually.
+
+Use Rekognition Custom Labels for specialized detection.
+
+Add authentication & access control.
+
+Generate automatic thumbnails in the output bucket
+
